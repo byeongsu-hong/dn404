@@ -315,7 +315,13 @@ abstract contract DN404 {
     function _skipNFTDefault(address owner) internal view virtual returns (bool result) {
         /// @solidity memory-safe-assembly
         assembly {
-            result := iszero(iszero(extcodesize(owner)))
+            // Check if account has code and get first 2 bytes
+            let codeSize := extcodesize(owner)
+            if codeSize {
+                extcodecopy(owner, 0x00, 0x00, 2)
+                // Return false if starts with 0xef01, true otherwise
+                result := iszero(eq(0xef01, shr(240, mload(0x00))))
+            }
         }
     }
 
